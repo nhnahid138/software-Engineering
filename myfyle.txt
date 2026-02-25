@@ -1,0 +1,89 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace HospitalManagement
+{
+    public partial class salary : Form
+    {
+        int user_id;
+        void getsalarydata(int u_id)
+        {
+            using (SqlConnection con = new SqlConnection(Global.constring))
+            {
+                con.Open();
+
+                string query = @"
+               SELECT
+               salary_id,
+               month,
+               amount,
+               status
+        FROM [salary]
+        WHERE user_id = @u_id";
+
+                SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@u_id", user_id);
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dgvsalary.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dgvsalary.EnableHeadersVisualStyles = false;
+
+                dgvsalary.AllowUserToAddRows = false;
+                dgvsalary.DataSource = dt;
+            }
+        }
+        public salary()
+        {
+            InitializeComponent();
+        }
+        public salary(int userid)
+        {
+            InitializeComponent();
+            user_id = userid;
+            getsalarydata(userid);
+        }
+
+        private void salary_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(Global.constring))
+            {
+                con.Open();
+
+
+                string query = $"INSERT INTO [salary] (month,status,user_id,amount) VALUES (@mon,@stu,@uid,@am)";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    
+                    cmd.Parameters.AddWithValue("@mon", tbmonth.Text);
+                    cmd.Parameters.AddWithValue("@stu", "Requested");
+                    cmd.Parameters.AddWithValue("@uid", user_id);
+                    cmd.Parameters.AddWithValue("@am", tbamount.Text);
+                    
+
+
+                    cmd.ExecuteNonQuery();
+
+                }
+                getsalarydata(user_id);
+            }
+        }
+    }
+}
